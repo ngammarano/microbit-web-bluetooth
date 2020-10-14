@@ -187,7 +187,7 @@ function connect() {
     navigator.bluetooth.requestDevice({
         // To accept all devices, use acceptAllDevices: true and remove filters.
         filters: [{namePrefix: "BBC micro:bit"}],
-        //optionalServices: [microbitUuid.genericAccess, microbitUuid.genericAttribute, microbitUuid.deviceInformation, microbitUuid.accelerometerService, microbitUuid.magnetometerService, microbitUuid.buttonService, microbitUuid.ioPinService, microbitUuid.ledService, microbitUuid.eventService, microbitUuid.dfuControlService, microbitUuid.temperatureService, microbitUuid.uartService],
+        optionalServices: [microbitUuid.genericAccess, microbitUuid.genericAttribute, microbitUuid.deviceInformation, microbitUuid.accelerometerService, microbitUuid.magnetometerService, microbitUuid.buttonService, microbitUuid.ioPinService, microbitUuid.ledService, microbitUuid.eventService, microbitUuid.dfuControlService, microbitUuid.temperatureService, microbitUuid.uartService],
     })
     .then(device => {
         bluetoothDevice = device;
