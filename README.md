@@ -1,4 +1,4 @@
-#micro:bit Web Bluetooth
+# micro:bit Web Bluetooth
 
 This repository contains examples of using Web Bluetooth with micro:bit.
 
