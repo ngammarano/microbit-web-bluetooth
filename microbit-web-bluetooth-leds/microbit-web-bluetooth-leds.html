@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Web Bluetooth micro:bit LEDs</title>
+        <h1>Web Bluetooth micro:bit LEDs</h1>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth LED service.</p>
+    </head>
+    <body id="body" style="background-color:#FFD0D0">
+        <button id="connectButton" onclick="connect()">Connect</button>
+        <button id="disconnectButton" onclick="disconnect()">Disconnect</button>
+        <h2>LED Matrix</h2>
+        <table>
+            <tr>
+                <td><input type="checkbox" id="11"></td>
+                <td><input type="checkbox" id="12"></td>
+                <td><input type="checkbox" id="13"></td>
+                <td><input type="checkbox" id="14"></td>
+                <td><input type="checkbox" id="15"></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" id="21"></td>
+                <td><input type="checkbox" id="22"></td>
+                <td><input type="checkbox" id="23"></td>
+                <td><input type="checkbox" id="24"></td>
+                <td><input type="checkbox" id="25"></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" id="31"></td>
+                <td><input type="checkbox" id="32"></td>
+                <td><input type="checkbox" id="33"></td>
+                <td><input type="checkbox" id="34"></td>
+                <td><input type="checkbox" id="35"></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" id="41"></td>
+                <td><input type="checkbox" id="42"></td>
+                <td><input type="checkbox" id="43"></td>
+                <td><input type="checkbox" id="44"></td>
+                <td><input type="checkbox" id="45"></td>
+            </tr>
+            <tr>
+                <td><input type="checkbox" id="51"></td>
+                <td><input type="checkbox" id="52"></td>
+                <td><input type="checkbox" id="53"></td>
+                <td><input type="checkbox" id="54"></td>
+                <td><input type="checkbox" id="55"></td>
+            </tr>
+        </table>
+        <button id="readLedMatrixButton" onclick="readLedMatrix()">Read</button>
+        <button id="writeLedMatrixButton" onclick="writeLedMatrix()">Write</button>
+        <h2>LED Text</h2>
+        <input type="text" id="ledTextText" maxlength="20">
+        <button id="writeLedTextButton" onclick="writeLedText()">Write</button>
+        <h2>Scrolling Delay</h2>
+        <input type="number" id="scrollingDelayText" min="0" max="65535">
+        <button id="readScrollingDelayButton" onclick="readScrollingDelay()">Read</button>
+        <button id="writeScrollingDelayButton" onclick="writeScrollingDelay()">Write</button>
+        <h2>Log <button id="clearLogButton" onclick="clearLog()">Clear</button></h2>
+        <p id="log" style="font-family:'Courier New',Courier,monospace"></p>
+    </body>
+    <script src="microbit-web-bluetooth-leds.js"></script>
+</html>
