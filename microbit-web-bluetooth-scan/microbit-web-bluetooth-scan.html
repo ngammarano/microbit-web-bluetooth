@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<style>
+			table, th, td {
+				border: 1px solid black;
+				border-collapse: collapse;
+			}
+			th {
+				background-color: #D0D0FF;
+			}
+		</style>
+		<title>Web Bluetooth micro:bit scan</title>
+		<h1>Web Bluetooth micro:bit scan</h1>
+		<p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Shows all the available Bluetooth services and characteristics, their name, UUID, and available properties.</p>
+	</head>
+	<body id="body" style="background-color:#FFD0D0">
+		<button id="connectButton" onclick="connect()">Connect</button>
+		<button id="disconnectButton" onclick="disconnect()">Disconnect</button>
+		<h2>Log <button id="clearLogButton" onclick="clearLog()">Clear</button></h2>
+		<p id="log" style="font-family:'Courier New',Courier,monospace"></p>
+	</body>
+	<script src="microbit-web-bluetooth-scan.js"></script>
+</html>
