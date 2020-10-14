@@ -2,8 +2,8 @@
  * Connects to a Bluetooth device.
  * The background color shows if a Bluetooth device is connected (green) or
  * disconnected (red).
- * Allows to interact with the characteristics of the micro:bit Bluetooth LED
- * service.
+ * Allows to interact with the characteristics of the micro:bit Bluetooth
+ * Button service.
  */
 
 var bluetoothDevice;
@@ -130,13 +130,28 @@ function onDisconnected() {
 
 
 
-var ledMatrixCharacteristic;
-var ledTextCharacteristic;
-var scrollingDelayCharacteristic;
+var buttonAStateCharacteristic;
+var buttonBStateCharacteristic;
+
+/**
+ * Function that updates the HTML element according to the button A state
+ * characteristic.
+ */
+function buttonAChanged(event) {
+    document.getElementById("buttonA").innerHTML = event.target.value.getUint8(0);
+}
+
+/**
+ * Function that updates the HTML element according to the button B state
+ * characteristic.
+ */
+function buttonBChanged(event) {
+    document.getElementById("buttonB").innerHTML = event.target.value.getUint8(0);
+}
 
 /**
  * Function that connects to a Bluetooth device, and saves the characteristics
- * associated with the LED service.
+ * associated with the Button service.
  */
 function connect() {
     addLog("Requesting micro:bit Bluetooth devices...", true);
@@ -153,30 +168,38 @@ function connect() {
         return device.gatt.connect();
     })
     .then(server => {
-        addLog("Getting LED service (UUID: " + microbitUuid.ledService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.ledService[0]);
+        addLog("Getting Button service (UUID: " + microbitUuid.buttonService[0] + ")...", true);
+        return server.getPrimaryService(microbitUuid.buttonService[0]);
     })
     .then(service => {
-        addLog("Getting LED matrix state characteristic...", true);
-        service.getCharacteristic(microbitUuid.ledMatrixState[0])
+        addLog("Getting Button A state characteristic...", true);
+        service.getCharacteristic(microbitUuid.buttonAState[0])
         .then(characteristic => {
-            ledMatrixCharacteristic = characteristic;
+            buttonAStateCharacteristic = characteristic;
+            addLog("Starting button A notifications...", true);
+            return characteristic.startNotifications()
+            .then(_ => {
+                characteristic.addEventListener('characteristicvaluechanged', buttonAChanged);
+            })
+            .catch(error => {
+                addLogError(error);
+            });
         })
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting LED text characteristic...", true);
-        service.getCharacteristic(microbitUuid.ledText[0])
+        addLog("Getting Button B state characteristic...", true);
+        service.getCharacteristic(microbitUuid.buttonBState[0])
         .then(characteristic => {
-            ledTextCharacteristic = characteristic;
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-        addLog("Getting scrolling delay characteristic...", true);
-        service.getCharacteristic(microbitUuid.scrollingDelay[0])
-        .then(characteristic => {
-            scrollingDelayCharacteristic = characteristic;
+            buttonBStateCharacteristic = characteristic;
+            addLog("Starting button B notifications...", true);
+            return characteristic.startNotifications()
+            .then(_ => {
+                characteristic.addEventListener('characteristicvaluechanged', buttonBChanged);
+            })
+            .catch(error => {
+                addLogError(error);
+            });
         })
         .catch(error => {
             addLogError(error);
@@ -199,164 +222,6 @@ function disconnect() {
         if (bluetoothDevice.gatt.connected) {
             addLog("Disconnecting...", true);
             bluetoothDevice.gatt.disconnect();
-        } else {
-            addLog("There is no device connected.", true);
-        };
-    };
-}
-
-
-
-/**
- * Function that updates the checkboxes according to the LED matrix state given
- * by the Bluetooth characteristics.
- */
-function readLedMatrix() {
-    if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
-    } else {
-        if (bluetoothDevice.gatt.connected) {
-            if (!ledMatrixCharacteristic) {
-                addLog("There is no LED Matrix characteristic.", true);
-            } else {
-                ledMatrixCharacteristic.readValue()
-                .then(value => {
-                    for (let rowIndex = 0; rowIndex < 5; rowIndex++) {
-                        let row = value.getUint8(rowIndex);
-                        for (let columnIndex = 0; columnIndex < 5; columnIndex++) {
-                            document.getElementById((rowIndex+1).toString() + (5-columnIndex).toString()).checked = ((row >>> columnIndex) % 2 === 1);
-                        };
-                    };
-                    addLog("LED matrix read...", true);
-                })
-                .catch(error => {
-                    addLogError(error);
-                });
-            };
-        } else {
-            addLog("There is no device connected.", true);
-        };
-    };
-}
-
-/**
- * Function that updates the LED matrix of the micro:bit according to the HTML
- * checkboxes through the LED matrix state Bluetooth characteristic.
- */
-function writeLedMatrix() {
-    if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
-    } else {
-        if (bluetoothDevice.gatt.connected) {
-            if (!ledMatrixCharacteristic) {
-                addLog("There is no LED Matrix characteristic.", true);
-            } else {
-                let buffer = new ArrayBuffer(5);
-                let ledMatrix = new DataView(buffer);
-                for (let rowIndex = 0; rowIndex < 5; rowIndex++) {
-                    ledMatrix.setUint8(rowIndex, 0);
-                    for (let columnIndex = 0; columnIndex < 5; columnIndex++) {
-                        ledMatrix.setUint8(rowIndex, ledMatrix.getUint8(rowIndex) | (document.getElementById((rowIndex+1).toString() + (5-columnIndex).toString()).checked << columnIndex));
-                    };
-                };
-                ledMatrixCharacteristic.writeValue(ledMatrix)
-                .then(_ => {
-                    addLog("LED matrix written...", true);
-                })
-                .catch(error => {
-                    addLogError(error);
-                });
-            };
-        } else {
-            addLog("There is no device connected.", true);
-        };
-    };
-}
-
-
-
-/**
- * Function that writes a string to the LED text characteristic.
- */
-function writeLedText() {
-    if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
-    } else {
-        if (bluetoothDevice.gatt.connected) {
-            if (!ledTextCharacteristic) {
-                addLog("There is no LED Text characteristic.", true);
-            } else {
-                if (!("TextEncoder" in window)) {
-                    addLogError("Sorry, this browser does not support TextEncoder...");
-                } else {
-                    let enc = new TextEncoder();
-                    ledTextCharacteristic.writeValue(enc.encode(document.getElementById("ledTextText").value))
-                    .then(_ => {
-                        addLog("LED text sent...", true);
-                    })
-                    .catch(error => {
-                        addLogError(error);
-                    });
-                };
-            };
-        } else {
-            addLog("There is no device connected.", true);
-        };
-    };
-}
-
-
-
-/**
- * Function that updates the HTML number input according to the scrolling delay
- * given by the Bluetooth characteristic.
- */
-function readScrollingDelay() {
-    if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
-    } else {
-        if (bluetoothDevice.gatt.connected) {
-            if (!scrollingDelayCharacteristic) {
-                addLog("There is no Scolling Delay characteristic.", true);
-            } else {
-                scrollingDelayCharacteristic.readValue()
-                .then(value => {
-                    addLog("Scrolling delay read...", true);
-                    document.getElementById("scrollingDelayText").value = value.getUint16(0, true); // Little Endian
-                })
-                .catch(error => {
-                    addLogError(error);
-                });
-            };
-        } else {
-            addLog("There is no device connected.", true);
-        };
-    };
-}
-
-/**
- * Function that updates the scrolling delay using the corresponding micro:bit
- * Bluetooth characteristic.
- */
-function writeScrollingDelay() {
-    if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
-    } else {
-        if (bluetoothDevice.gatt.connected) {
-            if (!scrollingDelayCharacteristic) {
-                addLog("There is no Scrolling Delay characteristic.", true);
-            } else {
-                let buffer = new ArrayBuffer(2);
-                let scrollingDelay = new DataView(buffer);
-                scrollingDelay.setUint16(0, document.getElementById("scrollingDelayText").value, true); // Little Endian
-                scrollingDelayCharacteristic.writeValue(scrollingDelay)
-                .then(_ => {
-                    addLog("Scrolling delay updated...", true);
-                })
-                .catch(error => {
-                    addLogError(error);
-                });
-            };
         } else {
             addLog("There is no device connected.", true);
         };
