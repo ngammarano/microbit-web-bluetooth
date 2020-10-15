@@ -16,3 +16,9 @@ Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting 
 Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting to a micro:bit via BLE, it allows to interact with the micro:bit through its Bluetooth Button service.
 * **Button A State**: notify state of button A (0=not pressed, 1=short pressed, 2=long pressed).
 * **Button B State**: notify state of button B (0=not pressed, 1=short pressed, 2=long pressed).
+
+## [Accelerometer](https://ngammarano.github.io/microbit-web-bluetooth/microbit-web-bluetooth-accel.html)
+
+Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting to a micro:bit via BLE, it allows to interact with the micro:bit through its Bluetooth Accelerometer service.
+* **Accelerometer Data**: notify accelerometer data of axes x, y and z.
+* **Accelerometer Period**: read or write the frequency with which accelerometer data is reported in milliseconds.
