@@ -10,6 +10,12 @@ Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting 
 * **Temperature**: notify temperature data in degrees Celsius.
 * **Temperature Period**: read or write the frequency with which temperature data is reported in milliseconds.
 
+## [UART](https://ngammarano.github.io/microbit-web-bluetooth/microbit-web-bluetooth-uart.html)
+
+Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting to a micro:bit via BLE, it allows to interact with the micro:bit through its Bluetooth UART service.
+* **TX**: indicate the string (micro:bit transmits and browser receives through WebBLE).
+* **RX**: write the string (micro:bit receives and browser transmits through WebBLE).
+
 ## [LEDs](https://ngammarano.github.io/microbit-web-bluetooth/microbit-web-bluetooth-leds.html)
 
 Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting to a micro:bit via BLE, it allows to interact with the micro:bit through its Bluetooth LED service.
