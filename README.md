@@ -4,6 +4,12 @@ This repository contains examples of using Web Bluetooth with micro:bit.
 
 Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting to a micro:bit via BLE, it prints all the available services and characteristics.
 
+## [Temperature](https://ngammarano.github.io/microbit-web-bluetooth/microbit-web-bluetooth-temperature.html)
+
+Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting to a micro:bit via BLE, it allows to interact with the micro:bit through its Bluetooth Temperature service.
+* **Temperature**: notify temperature data in degrees Celsius.
+* **Temperature Period**: read or write the frequency with which temperature data is reported in milliseconds.
+
 ## [LEDs](https://ngammarano.github.io/microbit-web-bluetooth/microbit-web-bluetooth-leds.html)
 
 Scan Bluetooth devices whose name starts with "BBC micro:bit". After connecting to a micro:bit via BLE, it allows to interact with the micro:bit through its Bluetooth LED service.
