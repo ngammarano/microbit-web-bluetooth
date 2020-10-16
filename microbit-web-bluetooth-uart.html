@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Web Bluetooth micro:bit UART</title>
+        <h1>Web Bluetooth micro:bit UART</h1>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth UART service.</p>
+    </head>
+    <body id="body" style="background-color:#FFD0D0">
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
+        <h2>RX</h2>
+        <input type="text" id="rxText" maxlength="19">
+        <button onclick="writeRx()">Write</button>
+        <h2>TX</h2>
+        <p id="tx" style="font-family:'Courier New',Courier,monospace"></p>
+        <h2>Log <button onclick="clearLog()">Clear</button></h2>
+        <p id="log" style="font-family:'Courier New',Courier,monospace"></p>
+    </body>
+    <script src="microbit-web-bluetooth-uart.js"></script>
+</html>
