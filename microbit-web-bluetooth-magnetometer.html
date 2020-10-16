@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Web Bluetooth micro:bit Magnetometer</title>
+        <h1>Web Bluetooth micro:bit Magnetometer</h1>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth Magnetometer service.</p>
+    </head>
+    <body id="body" style="background-color:#FFD0D0">
+        <button id="connectButton" onclick="connect()">Connect</button>
+        <button id="disconnectButton" onclick="disconnect()">Disconnect</button>
+        <h2>Magnetometer Data</h2>
+        <table>
+            <tr>
+                <td>x:</td>
+                <td id="magnetometerX">-</td>
+            </tr>
+            <tr>
+                <td>y:</td>
+                <td id="magnetometerY">-</td>
+            </tr>
+            <tr>
+                <td>z:</td>
+                <td id="magnetometerZ">-</td>
+            </tr>
+        </table>
+        <h2>Magnetometer Period</h2>
+        <input type="text" id="magnetometerPeriodText">
+        <button id="readMagnetometerPeriodButton" onclick="readMagnetometerPeriod()">Read</button>
+        <br>
+        <select id="magnetometerPeriodSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="20">20</option>
+            <option value="80">80</option>
+            <option value="160">160</option>
+            <option value="640">640</option>
+        </select>
+        <button id="writeMagnetometerPeriodButton" onclick="writeMagnetometerPeriod()">Write</button>
+        <h2>Magnetometer Bearing</h2>
+        <p id="bearing">Bearing: -° from north.</p>
+        <h2>Magnetometer Calibration</h2>
+        <p id="calibration">-</p>
+        <select id="magnetometerCalibrationSelect">
+            <option value="0">0</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+        </select>
+        <button id="writeMagnetometerCalibrationButton" onclick="writeMagnetometerCalibration()">Write</button>
+        <h2>Log <button id="clearLogButton" onclick="clearLog()">Clear</button></h2>
+        <p id="log" style="font-family:'Courier New',Courier,monospace"></p>
+    </body>
+    <script src="microbit-web-bluetooth-magnetometer.js"></script>
+</html>

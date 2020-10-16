@@ -3,7 +3,7 @@
  * The background color shows if a Bluetooth device is connected (green) or
  * disconnected (red).
  * Allows to interact with the characteristics of the micro:bit Bluetooth
- * Accelerometer service.
+ * Magnetometer service.
  */
 
 var bluetoothDevice;
@@ -130,35 +130,68 @@ function onDisconnected() {
 
 
 
-var accelerometerDataCharacteristic;
-var accelerometerPeriodCharacteristic;
+var magnetometerDataCharacteristic;
+var magnetometerPeriodCharacteristic;
+var magnetometerBearingCharacteristic;
+var magnetometerCalibrationCharacteristic;
 
 /**
- * Function that updates the HTML element according to the accelerometer data
+ * Function that updates the HTML element according to the magnetometer data
  * characteristic.
  */
-function accelerometerDataChanged(event) {
-    document.getElementById("accelerometerX").innerHTML = event.target.value.getInt16(0, true); // Little Endian
-    document.getElementById("accelerometerY").innerHTML = event.target.value.getInt16(2, true); // Little Endian
-    document.getElementById("accelerometerZ").innerHTML = event.target.value.getInt16(4, true); // Little Endian
+function magnetometerDataChanged(event) {
+    document.getElementById("magnetometerX").innerHTML = event.target.value.getInt16(0, true); // Little Endian
+    document.getElementById("magnetometerY").innerHTML = event.target.value.getInt16(2, true); // Little Endian
+    document.getElementById("magnetometerZ").innerHTML = event.target.value.getInt16(4, true); // Little Endian
 }
 
 /**
- * Function that updates the HTML number input according to the accelerometer
+ * Function that updates the HTML element according to the magnetometer bearing
+ * characteristic.
+ */
+function magnetometerBearingChanged(event) {
+    document.getElementById("bearing").innerHTML = "Bearing: " + event.target.value.getUint16(0, true) + "° from north."; // Little Endian
+}
+
+/**
+ * Function that updates the HTML element according to the magnetometer
+ * calibration characteristic.
+ */
+function magnetometerCalibrationChanged(event) {
+    switch (event.target.value.getUint8(0)) {
+        case 0:
+            document.getElementById("calibration").innerHTML = "State unknown";
+            break;
+        case 1:
+            document.getElementById("calibration").innerHTML = "Calibration requested";
+            break;
+        case 2:
+            document.getElementById("calibration").innerHTML = "Calibration completed OK";
+            break;
+        case 3:
+            document.getElementById("calibration").innerHTML = "Calibration completed with error";
+            break;
+        default:
+            document.getElementById("calibration").innerHTML = "???: the received number is not 0, 1, 2 nor 3.";
+    };
+}
+
+/**
+ * Function that updates the HTML number input according to the magnetometer
  * period given by the Bluetooth characteristic.
  */
-function readAccelerometerPeriod() {
+function readMagnetometerPeriod() {
     if (!bluetoothDevice) {
         addLog("There is no device connected.", true);
     } else {
         if (bluetoothDevice.gatt.connected) {
-            if (!accelerometerPeriodCharacteristic) {
-                addLog("There is no Accelerometer Period characteristic.", true);
+            if (!magnetometerPeriodCharacteristic) {
+                addLog("There is no Magnetometer Period characteristic.", true);
             } else {
-                accelerometerPeriodCharacteristic.readValue()
+                magnetometerPeriodCharacteristic.readValue()
                 .then(value => {
-                    addLog("Accelerometer period read...", true);
-                    document.getElementById("accelerometerPeriodText").value = value.getUint16(0, true); // Little Endian
+                    addLog("Magnetometer period read...", true);
+                    document.getElementById("magnetometerPeriodText").value = value.getUint16(0, true); // Little Endian
                 })
                 .catch(error => {
                     addLogError(error);
@@ -171,23 +204,52 @@ function readAccelerometerPeriod() {
 }
 
 /**
- * Function that updates the accelerometer period using the corresponding
+ * Function that updates the magnetometer period using the corresponding
  * micro:bit Bluetooth characteristic.
  */
-function writeAccelerometerPeriod() {
+function writeMagnetometerPeriod() {
     if (!bluetoothDevice) {
         addLog("There is no device connected.", true);
     } else {
         if (bluetoothDevice.gatt.connected) {
-            if (!accelerometerPeriodCharacteristic) {
-                addLog("There is no Accelerometer Period characteristic.", true);
+            if (!magnetometerPeriodCharacteristic) {
+                addLog("There is no Magnetometer Period characteristic.", true);
             } else {
                 let buffer = new ArrayBuffer(2);
-                let accelerometerPeriod = new DataView(buffer);
-                accelerometerPeriod.setUint16(0, document.getElementById("accelerometerPeriodSelect").value, true); // Little Endian
-                accelerometerPeriodCharacteristic.writeValue(accelerometerPeriod)
+                let magnetometerPeriod = new DataView(buffer);
+                magnetometerPeriod.setUint16(0, document.getElementById("magnetometerPeriodSelect").value, true); // Little Endian
+                magnetometerPeriodCharacteristic.writeValue(magnetometerPeriod)
                 .then(_ => {
-                    addLog("Accelerometer period updated...", true);
+                    addLog("Magnetometer period updated...", true);
+                })
+                .catch(error => {
+                    addLogError(error);
+                });
+            };
+        } else {
+            addLog("There is no device connected.", true);
+        };
+    };
+}
+
+/**
+ * Function that updates the magnetometer calibration using the corresponding
+ * micro:bit Bluetooth characteristic.
+ */
+function writeMagnetometerCalibration() {
+    if (!bluetoothDevice) {
+        addLog("There is no device connected.", true);
+    } else {
+        if (bluetoothDevice.gatt.connected) {
+            if (!magnetometerCalibrationCharacteristic) {
+                addLog("There is no Magnetometer Period characteristic.", true);
+            } else {
+                let buffer = new ArrayBuffer(1);
+                let magnetometerCalibration = new DataView(buffer);
+                magnetometerCalibration.setUint8(0, document.getElementById("magnetometerCalibrationSelect").value);
+                magnetometerCalibrationCharacteristic.writeValue(magnetometerCalibration)
+                .then(_ => {
+                    addLog("Magnetometer calibration updated...", true);
                 })
                 .catch(error => {
                     addLogError(error);
@@ -201,7 +263,7 @@ function writeAccelerometerPeriod() {
 
 /**
  * Function that connects to a Bluetooth device, and saves the characteristics
- * associated with the Accelerometer service.
+ * associated with the Magnetometer service.
  */
 function connect() {
     addLog("Requesting micro:bit Bluetooth devices...", true);
@@ -218,18 +280,18 @@ function connect() {
         return device.gatt.connect();
     })
     .then(server => {
-        addLog("Getting Accelerometer service (UUID: " + microbitUuid.accelerometerService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.accelerometerService[0]);
+        addLog("Getting Magnetometer service (UUID: " + microbitUuid.magnetometerService[0] + ")...", true);
+        return server.getPrimaryService(microbitUuid.magnetometerService[0]);
     })
     .then(service => {
-        addLog("Getting Accelerometer data characteristic...", true);
-        service.getCharacteristic(microbitUuid.accelerometerData[0])
+        addLog("Getting Magnetometer data characteristic...", true);
+        service.getCharacteristic(microbitUuid.magnetometerData[0])
         .then(characteristic => {
-            accelerometerDataCharacteristic = characteristic;
-            addLog("Starting accelerometer data notifications...", true);
+            magnetometerDataCharacteristic = characteristic;
+            addLog("Starting magnetometer data notifications...", true);
             return characteristic.startNotifications()
             .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', accelerometerDataChanged);
+                characteristic.addEventListener('characteristicvaluechanged', magnetometerDataChanged);
             })
             .catch(error => {
                 addLogError(error);
@@ -238,10 +300,42 @@ function connect() {
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting Accelerometer period characteristic...", true);
-        service.getCharacteristic(microbitUuid.accelerometerPeriod[0])
+        addLog("Getting Magnetometer period characteristic...", true);
+        service.getCharacteristic(microbitUuid.magnetometerPeriod[0])
         .then(characteristic => {
-            accelerometerPeriodCharacteristic = characteristic;
+            magnetometerPeriodCharacteristic = characteristic;
+        })
+        .catch(error => {
+            addLogError(error);
+        });
+        addLog("Getting Magnetometer bearing characteristic...", true);
+        service.getCharacteristic(microbitUuid.magnetometerBearing[0])
+        .then(characteristic => {
+            magnetometerBearingCharacteristic = characteristic;
+            addLog("Starting magnetometer bearing notifications...", true);
+            return characteristic.startNotifications()
+            .then(_ => {
+                characteristic.addEventListener('characteristicvaluechanged', magnetometerBearingChanged);
+            })
+            .catch(error => {
+                addLogError(error);
+            });
+        })
+        .catch(error => {
+            addLogError(error);
+        });
+        addLog("Getting Magnetometer calibration characteristic...", true);
+        service.getCharacteristic(microbitUuid.magnetometerCalibration[0])
+        .then(characteristic => {
+            magnetometerCalibrationCharacteristic = characteristic;
+            addLog("Starting magnetometer calibration notifications...", true);
+            return characteristic.startNotifications()
+            .then(_ => {
+                characteristic.addEventListener('characteristicvaluechanged', magnetometerCalibrationChanged);
+            })
+            .catch(error => {
+                addLogError(error);
+            });
         })
         .catch(error => {
             addLogError(error);
