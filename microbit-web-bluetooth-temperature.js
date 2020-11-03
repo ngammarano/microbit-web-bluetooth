@@ -146,6 +146,7 @@ function temperatureChanged(event) {
  * period given by the Bluetooth characteristic.
  */
 function readTemperaturePeriod() {
+    addLog("Reading temperature period... ", false);
     if (!bluetoothDevice) {
         addLog("There is no device connected.", true);
     } else {
@@ -155,8 +156,8 @@ function readTemperaturePeriod() {
             } else {
                 temperaturePeriodCharacteristic.readValue()
                 .then(value => {
-                    addLog("Temperature period read...", true);
                     document.getElementById("readTemperaturePeriodText").value = value.getUint16(0, true); // Little Endian
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
@@ -173,6 +174,7 @@ function readTemperaturePeriod() {
  * micro:bit Bluetooth characteristic.
  */
 function writeTemperaturePeriod() {
+    addLog("Writing temperature period... ", false);
     if (!bluetoothDevice) {
         addLog("There is no device connected.", true);
     } else {
@@ -185,7 +187,7 @@ function writeTemperaturePeriod() {
                 temperaturePeriod.setUint16(0, document.getElementById("writeTemperaturePeriodText").value, true); // Little Endian
                 temperaturePeriodCharacteristic.writeValue(temperaturePeriod)
                 .then(_ => {
-                    addLog("Temperature period updated...", true);
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
@@ -202,32 +204,53 @@ function writeTemperaturePeriod() {
  * associated with the Temperature service.
  */
 function connect() {
-    addLog("Requesting micro:bit Bluetooth devices...", true);
-    navigator.bluetooth.requestDevice({
-        // To accept all devices, use acceptAllDevices: true and remove filters.
-        filters: [{namePrefix: "BBC micro:bit"}],
-        optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
-    })
-    .then(device => {
-        bluetoothDevice = device;
-        addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)...", true);
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        document.getElementById("body").style = "background-color:#D0FFD0";
-        return device.gatt.connect();
-    })
-    .then(server => {
-        addLog("Getting Temperature service (UUID: " + microbitUuid.temperatureService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.temperatureService[0]);
-    })
-    .then(service => {
-        addLog("Getting Temperature characteristic...", true);
-        service.getCharacteristic(microbitUuid.temperature[0])
-        .then(characteristic => {
-            temperatureCharacteristic = characteristic;
-            addLog("Starting temperature notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', temperatureChanged);
+    if (!navigator.bluetooth) {
+        addLog("Bluetooth not available in this browser or computer.", true);
+    } else {
+        addLog("Requesting micro:bit Bluetooth devices... ", false);
+        navigator.bluetooth.requestDevice({
+            // To accept all devices, use acceptAllDevices: true and remove filters.
+            filters: [{namePrefix: "BBC micro:bit"}],
+            optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
+        })
+        .then(device => {
+            addLog("<font color='green'>OK</font>", true);
+            bluetoothDevice = device;
+            addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)... ", false);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
+            document.getElementById("body").style = "background-color:#D0FFD0";
+            return device.gatt.connect();
+        })
+        .then(server => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Temperature service (UUID: " + microbitUuid.temperatureService[0] + ")... ", false);
+            return server.getPrimaryService(microbitUuid.temperatureService[0]);
+        })
+        .then(service => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Temperature characteristic... ", false);
+            service.getCharacteristic(microbitUuid.temperature[0])
+            .then(characteristic => {
+                addLog("<font color='green'>OK</font>", true);
+                temperatureCharacteristic = characteristic;
+                addLog("Starting temperature notifications... ", false);
+                return characteristic.startNotifications()
+                .then(_ => {
+                    characteristic.addEventListener('characteristicvaluechanged', temperatureChanged);
+                    addLog("<font color='green'>OK</font>", true);
+                    addLog("Getting Temperature period characteristic... ", false);
+                    service.getCharacteristic(microbitUuid.temperaturePeriod[0])
+                    .then(characteristic => {
+                        temperaturePeriodCharacteristic = characteristic;
+                        addLog("<font color='green'>OK</font>", true);
+                    })
+                    .catch(error => {
+                        addLogError(error);
+                    });
+                })
+                .catch(error => {
+                    addLogError(error);
+                });
             })
             .catch(error => {
                 addLogError(error);
@@ -236,18 +259,7 @@ function connect() {
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting Temperature period characteristic...", true);
-        service.getCharacteristic(microbitUuid.temperaturePeriod[0])
-        .then(characteristic => {
-            temperaturePeriodCharacteristic = characteristic;
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-    })
-    .catch(error => {
-        addLogError(error);
-    });
+    };
 }
 
 
@@ -260,8 +272,11 @@ function disconnect() {
         addLog("There is no device connected.", true);
     } else {
         if (bluetoothDevice.gatt.connected) {
-            addLog("Disconnecting...", true);
+            addLog("Disconnecting... ", false);
             bluetoothDevice.gatt.disconnect();
+            if (!bluetoothDevice.connected) {
+                addLog("<font color='green'>OK</font>", true);
+            };
         } else {
             addLog("There is no device connected.", true);
         };
