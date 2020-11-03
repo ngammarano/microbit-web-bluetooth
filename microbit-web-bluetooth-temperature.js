@@ -148,11 +148,11 @@ function temperatureChanged(event) {
 function readTemperaturePeriod() {
     addLog("Reading temperature period... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!temperaturePeriodCharacteristic) {
-                addLog("There is no Temperature Period characteristic.", true);
+                addLogError("There is no Temperature Period characteristic.");
             } else {
                 temperaturePeriodCharacteristic.readValue()
                 .then(value => {
@@ -164,7 +164,7 @@ function readTemperaturePeriod() {
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -176,11 +176,11 @@ function readTemperaturePeriod() {
 function writeTemperaturePeriod() {
     addLog("Writing temperature period... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!temperaturePeriodCharacteristic) {
-                addLog("There is no Temperature Period characteristic.", true);
+                addLogError("There is no Temperature Period characteristic.");
             } else {
                 let buffer = new ArrayBuffer(2);
                 let temperaturePeriod = new DataView(buffer);
@@ -194,7 +194,7 @@ function writeTemperaturePeriod() {
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -205,7 +205,7 @@ function writeTemperaturePeriod() {
  */
 function connect() {
     if (!navigator.bluetooth) {
-        addLog("Bluetooth not available in this browser or computer.", true);
+        addLogError("Bluetooth not available in this browser or computer.");
     } else {
         addLog("Requesting micro:bit Bluetooth devices... ", false);
         navigator.bluetooth.requestDevice({
@@ -268,17 +268,17 @@ function connect() {
  * Function that disconnects from the Bluetooth device (if connected).
  */
 function disconnect() {
+    addLog("Disconnecting... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
-            addLog("Disconnecting... ", false);
             bluetoothDevice.gatt.disconnect();
             if (!bluetoothDevice.connected) {
                 addLog("<font color='green'>OK</font>", true);
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
