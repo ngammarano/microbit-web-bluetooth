@@ -3,7 +3,7 @@
     <head>
         <title>Web Bluetooth micro:bit UART</title>
         <h1>Web Bluetooth micro:bit UART</h1>
-        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth UART service.</p>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth UART service.<br>Example MakeCode micro:bit project <a href="https://makecode.microbit.org/_9TPWorUACfpp" target="_blank">here</a> (or <a href="https://makecode.microbit.org/#pub:_9TPWorUACfpp" target="_blank">here</a> to open in MakeCode directly). In this example, when the micro:bit receives a string via BLE UART, it inverts it and sends it back via BLE UART.</p>
     </head>
     <body id="body" style="background-color:#FFD0D0">
         <button onclick="connect()">Connect</button>
@@ -11,7 +11,7 @@
         <h2>RX</h2>
         <input type="text" id="rxText" maxlength="19">
         <button onclick="writeRx()">Write</button>
-        <h2>TX</h2>
+        <h2>TX <button onclick="clearTx()">Clear</button></h2>
         <p id="tx" style="font-family:'Courier New',Courier,monospace"></p>
         <h2>Log <button onclick="clearLog()">Clear</button></h2>
         <p id="log" style="font-family:'Courier New',Courier,monospace"></p>

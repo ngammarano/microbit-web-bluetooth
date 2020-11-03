@@ -119,6 +119,13 @@ function clearLog() {
     document.getElementById("log").innerHTML = "";
 }
 
+/**
+ * Function that empties the UART TX field.
+ */
+function clearTx() {
+    document.getElementById("tx").innerHTML = "";
+}
+
 
 
 /**
@@ -137,12 +144,13 @@ var rxCharacteristic;
  * Function that updates the HTML element according to the UART characteristic.
  */
 function readTx(event) {
+    //addLog("Reading TX... ", false);
     if (!("TextDecoder") in window) {
         addLogError("Sorry, this browser does not support TextDecoder...");
     } else {
         let enc = new TextDecoder("utf-8");
         document.getElementById("tx").innerHTML += enc.decode(event.target.value) + "<br>";
-        addLog("TX updated...", true);
+        //addLog("<font color='green'>OK</font>", true);
     };
 }
 
@@ -151,12 +159,13 @@ function readTx(event) {
  * characteristic.
  */
 function writeRx() {
+    addLog("Writing RX... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!rxCharacteristic) {
-                addLog("There is no RX characteristic.", true);
+                addLogError("There is no RX characteristic.");
             } else {
                 if (!("TextEncoder" in window)) {
                     addLogError("Sorry, this browser does not support TextEncoder...");
@@ -164,7 +173,7 @@ function writeRx() {
                     let enc = new TextEncoder();
                     rxCharacteristic.writeValue(enc.encode(document.getElementById("rxText").value + '\n'))
                     .then(_ => {
-                        addLog("RX sent...", true);
+                        addLog("<font color='green'>OK</font>", true);
                     })
                     .catch(error => {
                         addLogError(error);
@@ -172,42 +181,63 @@ function writeRx() {
                 };
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
 
 /**
  * Function that connects to a Bluetooth device, and saves the characteristics
- * associated with the Temperature service.
+ * associated with the UART service.
  */
 function connect() {
-    addLog("Requesting micro:bit Bluetooth devices...", true);
-    navigator.bluetooth.requestDevice({
-        // To accept all devices, use acceptAllDevices: true and remove filters.
-        filters: [{namePrefix: "BBC micro:bit"}],
-        optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
-    })
-    .then(device => {
-        bluetoothDevice = device;
-        addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)...", true);
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        document.getElementById("body").style = "background-color:#D0FFD0";
-        return device.gatt.connect();
-    })
-    .then(server => {
-        addLog("Getting UART service (UUID: " + microbitUuid.uartService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.uartService[0]);
-    })
-    .then(service => {
-        addLog("Getting TX characteristic...", true);
-        service.getCharacteristic(microbitUuid.txCharacteristic[0])
-        .then(characteristic => {
-            txCharacteristic = characteristic;
-            addLog("Starting TX notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', readTx);
+    addLog("Requesting micro:bit Bluetooth devices... ", false);
+    if (!navigator.bluetooth) {
+        addErrorLog("Bluetooth not available in this browser or computer.");
+    } else {
+        navigator.bluetooth.requestDevice({
+            // To accept all devices, use acceptAllDevices: true and remove filters.
+            filters: [{namePrefix: "BBC micro:bit"}],
+            optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
+        })
+        .then(device => {
+            addLog("<font color='green'>OK</font>", true);
+            bluetoothDevice = device;
+            addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)... ", false);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
+            document.getElementById("body").style = "background-color:#D0FFD0";
+            return device.gatt.connect();
+        })
+        .then(server => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting UART service (UUID: " + microbitUuid.uartService[0] + ")... ", false);
+            return server.getPrimaryService(microbitUuid.uartService[0]);
+        })
+        .then(service => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting TX characteristic... ", false);
+            service.getCharacteristic(microbitUuid.txCharacteristic[0])
+            .then(characteristic => {
+                addLog("<font color='green'>OK</font>", true);
+                txCharacteristic = characteristic;
+                addLog("Starting TX notifications... ", false);
+                return characteristic.startNotifications()
+                .then(_ => {
+                    characteristic.addEventListener('characteristicvaluechanged', readTx);
+                    addLog("<font color='green'>OK</font>", true);
+                    addLog("Getting RX characteristic... ", false);
+                    service.getCharacteristic(microbitUuid.rxCharacteristic[0])
+                    .then(characteristic => {
+                        rxCharacteristic = characteristic;
+                        addLog("<font color='green'>OK</font>", true);
+                    })
+                    .catch(error => {
+                        addErrorLog(error);
+                    });
+                })
+                .catch(error => {
+                    addLogError(error);
+                });
             })
             .catch(error => {
                 addLogError(error);
@@ -216,18 +246,7 @@ function connect() {
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting RX characteristic...", true);
-        service.getCharacteristic(microbitUuid.rxCharacteristic[0])
-        .then(characteristic => {
-            rxCharacteristic = characteristic;
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-    })
-    .catch(error => {
-        addLogError(error);
-    });
+    };
 }
 
 
@@ -236,14 +255,17 @@ function connect() {
  * Function that disconnects from the Bluetooth device (if connected).
  */
 function disconnect() {
+    addLog("Disconnecting... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
-            addLog("Disconnecting...", true);
             bluetoothDevice.gatt.disconnect();
+            if (!bluetoothDevice.gatt.connected) {
+                addLog("<font color='green'>OK</font>", true);
+            }
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }

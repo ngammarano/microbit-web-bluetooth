@@ -274,7 +274,7 @@ function disconnect() {
     } else {
         if (bluetoothDevice.gatt.connected) {
             bluetoothDevice.gatt.disconnect();
-            if (!bluetoothDevice.connected) {
+            if (!bluetoothDevice.gatt.connected) {
                 addLog("<font color='green'>OK</font>", true);
             };
         } else {
