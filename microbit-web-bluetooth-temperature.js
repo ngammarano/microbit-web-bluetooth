@@ -204,10 +204,10 @@ function writeTemperaturePeriod() {
  * associated with the Temperature service.
  */
 function connect() {
+    addLog("Requesting micro:bit Bluetooth devices... ", false);
     if (!navigator.bluetooth) {
         addLogError("Bluetooth not available in this browser or computer.");
     } else {
-        addLog("Requesting micro:bit Bluetooth devices... ", false);
         navigator.bluetooth.requestDevice({
             // To accept all devices, use acceptAllDevices: true and remove filters.
             filters: [{namePrefix: "BBC micro:bit"}],
