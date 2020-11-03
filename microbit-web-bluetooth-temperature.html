@@ -3,15 +3,15 @@
     <head>
         <title>Web Bluetooth micro:bit Temperature</title>
         <h1>Web Bluetooth micro:bit Temperature</h1>
-        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth Temperature service.</p>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth Temperature service.<br>Example MakeCode micro:bit project <a href="https://makecode.microbit.org/_9j6X6abjUMyP" target="_blank">here</a> (or <a href="https://makecode.microbit.org/#pub:_9j6X6abjUMyP" target="_blank">here</a> to open in MakeCode directly).</p>
     </head>
     <body id="body" style="background-color:#FFD0D0">
-        <button id="connectButton" onclick="connect()">Connect</button>
-        <button id="disconnectButton" onclick="disconnect()">Disconnect</button>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
         <h2>Temperature (°C)</h2>
         <p id="temperature">-</p>
-        <h2>Temperature Period</h2>
-        <input type="text" id="readTemperaturePeriodText">
+        <h2>Temperature Period (ms)</h2>
+        <input type="text" id="readTemperaturePeriodText" disabled="true">
         <button id="readTemperaturePeriodButton" onclick="readTemperaturePeriod()">Read</button>
         <br>
         <input type="text" id="writeTemperaturePeriodText">
