@@ -217,18 +217,18 @@ function connect() {
             addLog("<font color='green'>OK</font>", true);
             addLog("Getting TX characteristic... ", false);
             service.getCharacteristic(microbitUuid.txCharacteristic[0])
-            .then(characteristic => {
+            .then(txChar => {
                 addLog("<font color='green'>OK</font>", true);
-                txCharacteristic = characteristic;
+                txCharacteristic = txChar;
                 addLog("Starting TX notifications... ", false);
-                return characteristic.startNotifications()
+                return txChar.startNotifications()
                 .then(_ => {
-                    characteristic.addEventListener('characteristicvaluechanged', readTx);
+                    txChar.addEventListener('characteristicvaluechanged', readTx);
                     addLog("<font color='green'>OK</font>", true);
                     addLog("Getting RX characteristic... ", false);
                     service.getCharacteristic(microbitUuid.rxCharacteristic[0])
-                    .then(characteristic => {
-                        rxCharacteristic = characteristic;
+                    .then(rxChar => {
+                        rxCharacteristic = rxChar;
                         addLog("<font color='green'>OK</font>", true);
                     })
                     .catch(error => {

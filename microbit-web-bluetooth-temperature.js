@@ -230,18 +230,18 @@ function connect() {
             addLog("<font color='green'>OK</font>", true);
             addLog("Getting Temperature characteristic... ", false);
             service.getCharacteristic(microbitUuid.temperature[0])
-            .then(characteristic => {
+            .then(tempChar => {
                 addLog("<font color='green'>OK</font>", true);
-                temperatureCharacteristic = characteristic;
+                temperatureCharacteristic = tempChar;
                 addLog("Starting temperature notifications... ", false);
-                return characteristic.startNotifications()
+                return tempChar.startNotifications()
                 .then(_ => {
-                    characteristic.addEventListener('characteristicvaluechanged', temperatureChanged);
+                    tempChar.addEventListener('characteristicvaluechanged', temperatureChanged);
                     addLog("<font color='green'>OK</font>", true);
                     addLog("Getting Temperature period characteristic... ", false);
                     service.getCharacteristic(microbitUuid.temperaturePeriod[0])
-                    .then(characteristic => {
-                        temperaturePeriodCharacteristic = characteristic;
+                    .then(periodChar => {
+                        temperaturePeriodCharacteristic = periodChar;
                         addLog("<font color='green'>OK</font>", true);
                     })
                     .catch(error => {
