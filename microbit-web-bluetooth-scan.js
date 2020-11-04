@@ -183,49 +183,56 @@ var stringTable = "";
  * all its characteristics.
  */
 function connect() {
-    addLog("Requesting micro:bit Bluetooth devices...", true);
-    navigator.bluetooth.requestDevice({
-        // To accept all devices, use acceptAllDevices: true and remove filters.
-        filters: [{namePrefix: "BBC micro:bit"}],
-        optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
-    })
-    .then(device => {
-        bluetoothDevice = device;
-        addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)...", true);
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        document.getElementById("body").style = "background-color:#D0FFD0";
-        return device.gatt.connect();
-    })
-    .then(server => {
-        addLog("Getting primary services...", true);
-        return server.getPrimaryServices();
-    })
-    .then(services => {
-        addLog("Getting characteristics...", true);
-        nSer = services.length;
-        services.forEach(service => {
-            service.getCharacteristics()
-            .then(characteristics => {
-                nChar = characteristics.length;
-                printService(service);
-                nSer--;
-                characteristics.forEach(characteristic => {
-                    printCharacteristic(characteristic);
-                    nChar--;
-                    if ((nSer === 0) && (nChar === 0) && tableFormat) {
-                        addLog('<table><tr><th>Service/Characteristic</th><th>Name</th><th>UUID</th><th>Available properties</th></tr>' + stringTable + '</table>', false);
-                        stringTable = "";
-                    };
+    addLog("Requesting micro:bit Bluetooth devices... ", false);
+    if (!navigator.bluetooth) {
+        addLogError("Bluetooth not available in this browser or computer.");
+    } else {
+        navigator.bluetooth.requestDevice({
+            // To accept all devices, use acceptAllDevices: true and remove filters.
+            filters: [{namePrefix: "BBC micro:bit"}],
+            optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
+        })
+        .then(device => {
+            addLog("<font color='green'>OK</font>", true);
+            bluetoothDevice = device;
+            addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)... ", false);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
+            document.getElementById("body").style = "background-color:#D0FFD0";
+            return device.gatt.connect();
+        })
+        .then(server => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting primary services... ", false);
+            return server.getPrimaryServices();
+        })
+        .then(services => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting characteristics... ", false);
+            nSer = services.length;
+            services.forEach(service => {
+                service.getCharacteristics()
+                .then(characteristics => {
+                    nChar = characteristics.length;
+                    printService(service);
+                    nSer--;
+                    characteristics.forEach(characteristic => {
+                        printCharacteristic(characteristic);
+                        nChar--;
+                        if ((nSer === 0) && (nChar === 0) && tableFormat) {
+                            addLog('<table><tr><th>Service/Characteristic</th><th>Name</th><th>UUID</th><th>Available properties</th></tr>' + stringTable + '</table>', false);
+                            stringTable = "";
+                        };
+                    });
+                })
+                .catch(error => {
+                    addLogError(error);
                 });
-            })
-            .catch(error => {
-                addLogError(error);
             });
+        })
+        .catch(error => {
+            addLogError(error);
         });
-    })
-    .catch(error => {
-        addLogError(error);
-    });
+    };
 }
 
 
@@ -234,12 +241,15 @@ function connect() {
  * Function that disconnects from the Bluetooth device (if connected).
  */
 function disconnect() {
+    addLog("Disconnecting... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else if (bluetoothDevice.gatt.connected) {
-        addLog("Disconnecting...", true);
         bluetoothDevice.gatt.disconnect();
+        if (!bluetoothDevice.gatt.connected) {
+            addLog("<font color='green'>OK</font>", true);
+        };
     } else {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     }
 }
