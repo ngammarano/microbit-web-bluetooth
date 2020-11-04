@@ -3,16 +3,16 @@
     <head>
         <title>Web Bluetooth micro:bit Buttons</title>
         <h1>Web Bluetooth micro:bit Buttons</h1>
-        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth Button service.</p>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth Button service.<br>Example MakeCode micro:bit project <a href="https://makecode.microbit.org/_VyE7btbcvPvR" target="_blank">here</a> (or <a href="https://makecode.microbit.org/#pub:_VyE7btbcvPvR" target="_blank">here</a> to open in MakeCode directly).</p>
     </head>
     <body id="body" style="background-color:#FFD0D0">
-        <button id="connectButton" onclick="connect()">Connect</button>
-        <button id="disconnectButton" onclick="disconnect()">Disconnect</button>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
         <h2>Button A</h2>
         <p id="buttonA">-</p>
         <h2>Button B</h2>
         <p id="buttonB">-</p>
-        <h2>Log <button id="clearLogButton" onclick="clearLog()">Clear</button></h2>
+        <h2>Log <button onclick="clearLog()">Clear</button></h2>
         <p id="log" style="font-family:'Courier New',Courier,monospace"></p>
     </body>
     <script src="microbit-web-bluetooth-button.js"></script>

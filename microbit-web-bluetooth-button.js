@@ -154,32 +154,62 @@ function buttonBChanged(event) {
  * associated with the Button service.
  */
 function connect() {
-    addLog("Requesting micro:bit Bluetooth devices...", true);
-    navigator.bluetooth.requestDevice({
-        // To accept all devices, use acceptAllDevices: true and remove filters.
-        filters: [{namePrefix: "BBC micro:bit"}],
-        optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
-    })
-    .then(device => {
-        bluetoothDevice = device;
-        addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)...", true);
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        document.getElementById("body").style = "background-color:#D0FFD0";
-        return device.gatt.connect();
-    })
-    .then(server => {
-        addLog("Getting Button service (UUID: " + microbitUuid.buttonService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.buttonService[0]);
-    })
-    .then(service => {
-        addLog("Getting Button A state characteristic...", true);
-        service.getCharacteristic(microbitUuid.buttonAState[0])
-        .then(characteristic => {
-            buttonAStateCharacteristic = characteristic;
-            addLog("Starting button A notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', buttonAChanged);
+    addLog("Requesting micro:bit Bluetooth devices... ", false);
+    if (!navigator.bluetooth) {
+        addLogError("Bluetooth not available in this browser or computer.");
+    } else {
+        navigator.bluetooth.requestDevice({
+            // To accept all devices, use acceptAllDevices: true and remove filters.
+            filters: [{namePrefix: "BBC micro:bit"}],
+            optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
+        })
+        .then(device => {
+            addLog("<font color='green'>OK</font>", true);
+            bluetoothDevice = device;
+            addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)... ", false);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
+            document.getElementById("body").style = "background-color:#D0FFD0";
+            return device.gatt.connect();
+        })
+        .then(server => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Button service (UUID: " + microbitUuid.buttonService[0] + ")... ", false);
+            return server.getPrimaryService(microbitUuid.buttonService[0]);
+        })
+        .then(service => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Button A state characteristic... ", false);
+            service.getCharacteristic(microbitUuid.buttonAState[0])
+            .then(buttonAChar => {
+                addLog("<font color='green'>OK</font>", true);
+                buttonAStateCharacteristic = buttonAChar;
+                addLog("Starting button A notifications... ", false);
+                return buttonAChar.startNotifications()
+                .then(_ => {
+                    addLog("<font color='green'>OK</font>", true);
+                    buttonAChar.addEventListener('characteristicvaluechanged', buttonAChanged);
+                    addLog("Getting Button B state characteristic... ", false);
+                    service.getCharacteristic(microbitUuid.buttonBState[0])
+                    .then(buttonBChar => {
+                        addLog("<font color='green'>OK</font>", true);
+                        buttonBStateCharacteristic = buttonBChar;
+                        addLog("Starting button B notifications... ", false);
+                        return buttonBChar.startNotifications()
+                        .then(_ => {
+                            addLog("<font color='green'>OK</font>", true);
+                            buttonBChar.addEventListener('characteristicvaluechanged', buttonBChanged);
+                        })
+                        .catch(error => {
+                            addLogError(error);
+                        });
+                    })
+                    .catch(error => {
+                        addLogError(error);
+                    });
+                })
+                .catch(error => {
+                    addLogError(error);
+                });
             })
             .catch(error => {
                 addLogError(error);
@@ -188,26 +218,7 @@ function connect() {
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting Button B state characteristic...", true);
-        service.getCharacteristic(microbitUuid.buttonBState[0])
-        .then(characteristic => {
-            buttonBStateCharacteristic = characteristic;
-            addLog("Starting button B notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', buttonBChanged);
-            })
-            .catch(error => {
-                addLogError(error);
-            });
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-    })
-    .catch(error => {
-        addLogError(error);
-    });
+    };
 }
 
 
@@ -216,14 +227,17 @@ function connect() {
  * Function that disconnects from the Bluetooth device (if connected).
  */
 function disconnect() {
+    addLog("Disconnecting... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
-            addLog("Disconnecting...", true);
             bluetoothDevice.gatt.disconnect();
+            if (!bluetoothDevice.gatt.connected) {
+                addLog("<font color='green'>OK</font>", true);
+            }
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
