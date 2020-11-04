@@ -181,16 +181,17 @@ function magnetometerCalibrationChanged(event) {
  * period given by the Bluetooth characteristic.
  */
 function readMagnetometerPeriod() {
+    addLog("Reading magnetometer period... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!magnetometerPeriodCharacteristic) {
-                addLog("There is no Magnetometer Period characteristic.", true);
+                addLogError("There is no Magnetometer Period characteristic.");
             } else {
                 magnetometerPeriodCharacteristic.readValue()
                 .then(value => {
-                    addLog("Magnetometer period read...", true);
+                    addLog("<font color='green'>OK</font>", true);
                     document.getElementById("magnetometerPeriodText").value = value.getUint16(0, true); // Little Endian
                 })
                 .catch(error => {
@@ -198,7 +199,7 @@ function readMagnetometerPeriod() {
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -208,26 +209,27 @@ function readMagnetometerPeriod() {
  * micro:bit Bluetooth characteristic.
  */
 function writeMagnetometerPeriod() {
+    addLog("Writing magnetometer period... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!magnetometerPeriodCharacteristic) {
-                addLog("There is no Magnetometer Period characteristic.", true);
+                addLogError("There is no Magnetometer Period characteristic.");
             } else {
                 let buffer = new ArrayBuffer(2);
                 let magnetometerPeriod = new DataView(buffer);
                 magnetometerPeriod.setUint16(0, document.getElementById("magnetometerPeriodSelect").value, true); // Little Endian
                 magnetometerPeriodCharacteristic.writeValue(magnetometerPeriod)
                 .then(_ => {
-                    addLog("Magnetometer period updated...", true);
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -237,26 +239,27 @@ function writeMagnetometerPeriod() {
  * micro:bit Bluetooth characteristic.
  */
 function writeMagnetometerCalibration() {
+    addLog("Writing magnetometer calibration... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!magnetometerCalibrationCharacteristic) {
-                addLog("There is no Magnetometer Period characteristic.", true);
+                addLogError("There is no Magnetometer Period characteristic.");
             } else {
                 let buffer = new ArrayBuffer(1);
                 let magnetometerCalibration = new DataView(buffer);
                 magnetometerCalibration.setUint8(0, document.getElementById("magnetometerCalibrationSelect").value);
                 magnetometerCalibrationCharacteristic.writeValue(magnetometerCalibration)
                 .then(_ => {
-                    addLog("Magnetometer calibration updated...", true);
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -266,32 +269,89 @@ function writeMagnetometerCalibration() {
  * associated with the Magnetometer service.
  */
 function connect() {
-    addLog("Requesting micro:bit Bluetooth devices...", true);
-    navigator.bluetooth.requestDevice({
-        // To accept all devices, use acceptAllDevices: true and remove filters.
-        filters: [{namePrefix: "BBC micro:bit"}],
-        optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
-    })
-    .then(device => {
-        bluetoothDevice = device;
-        addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)...", true);
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        document.getElementById("body").style = "background-color:#D0FFD0";
-        return device.gatt.connect();
-    })
-    .then(server => {
-        addLog("Getting Magnetometer service (UUID: " + microbitUuid.magnetometerService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.magnetometerService[0]);
-    })
-    .then(service => {
-        addLog("Getting Magnetometer data characteristic...", true);
-        service.getCharacteristic(microbitUuid.magnetometerData[0])
-        .then(characteristic => {
-            magnetometerDataCharacteristic = characteristic;
-            addLog("Starting magnetometer data notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', magnetometerDataChanged);
+    addLog("Requesting micro:bit Bluetooth devices... ", false);
+    if (!navigator.bluetooth) {
+        addLogError("Bluetooth not available in this browser or computer.");
+    } else {
+        navigator.bluetooth.requestDevice({
+            // To accept all devices, use acceptAllDevices: true and remove filters.
+            filters: [{namePrefix: "BBC micro:bit"}],
+            optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
+        })
+        .then(device => {
+            addLog("<font color='green'>OK</font>", true);
+            bluetoothDevice = device;
+            addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)... ", false);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
+            document.getElementById("body").style = "background-color:#D0FFD0";
+            return device.gatt.connect();
+        })
+        .then(server => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Magnetometer service (UUID: " + microbitUuid.magnetometerService[0] + ")... ", false);
+            return server.getPrimaryService(microbitUuid.magnetometerService[0]);
+        })
+        .then(service => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Magnetometer data characteristic... ", false);
+            service.getCharacteristic(microbitUuid.magnetometerData[0])
+            .then(dataChar => {
+                addLog("<font color='green'>OK</font>", true);
+                magnetometerDataCharacteristic = dataChar;
+                addLog("Starting magnetometer data notifications... ", false);
+                return dataChar.startNotifications()
+                .then(_ => {
+                    addLog("<font color='green'>OK</font>", true);
+                    dataChar.addEventListener('characteristicvaluechanged', magnetometerDataChanged);
+                    addLog("Getting Magnetometer period characteristic... ", false);
+                    service.getCharacteristic(microbitUuid.magnetometerPeriod[0])
+                    .then(periodChar => {
+                        addLog("<font color='green'>OK</font>", true);
+                        magnetometerPeriodCharacteristic = periodChar;
+                        addLog("Getting Magnetometer bearing characteristic... ", false);
+                        service.getCharacteristic(microbitUuid.magnetometerBearing[0])
+                        .then(bearingChar => {
+                            addLog("<font color='green'>OK</font>", true);
+                            magnetometerBearingCharacteristic = bearingChar;
+                            addLog("Starting magnetometer bearing notifications... ", false);
+                            return bearingChar.startNotifications()
+                            .then(_ => {
+                                addLog("<font color='green'>OK</font>", true);
+                                bearingChar.addEventListener('characteristicvaluechanged', magnetometerBearingChanged);
+                                addLog("Getting Magnetometer calibration characteristic... ", false);
+                                service.getCharacteristic(microbitUuid.magnetometerCalibration[0])
+                                .then(characteristic => {
+                                    addLog("<font color='green'>OK</font>", true);
+                                    magnetometerCalibrationCharacteristic = characteristic;
+                                    addLog("Starting magnetometer calibration notifications... ", false);
+                                    return characteristic.startNotifications()
+                                    .then(_ => {
+                                        characteristic.addEventListener('characteristicvaluechanged', magnetometerCalibrationChanged);
+                                        addLog("<font color='green'>OK</font>", true);
+                                    })
+                                    .catch(error => {
+                                        addLogError(error);
+                                    });
+                                })
+                                .catch(error => {
+                                    addLogError(error);
+                                });
+                            })
+                            .catch(error => {
+                                addLogError(error);
+                            });
+                        })
+                        .catch(error => {
+                            addLogError(error);
+                        });
+                    })
+                    .catch(error => {
+                        addLogError(error);
+                    });
+                })
+                .catch(error => {
+                    addLogError(error);
+                });
             })
             .catch(error => {
                 addLogError(error);
@@ -300,50 +360,7 @@ function connect() {
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting Magnetometer period characteristic...", true);
-        service.getCharacteristic(microbitUuid.magnetometerPeriod[0])
-        .then(characteristic => {
-            magnetometerPeriodCharacteristic = characteristic;
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-        addLog("Getting Magnetometer bearing characteristic...", true);
-        service.getCharacteristic(microbitUuid.magnetometerBearing[0])
-        .then(characteristic => {
-            magnetometerBearingCharacteristic = characteristic;
-            addLog("Starting magnetometer bearing notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', magnetometerBearingChanged);
-            })
-            .catch(error => {
-                addLogError(error);
-            });
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-        addLog("Getting Magnetometer calibration characteristic...", true);
-        service.getCharacteristic(microbitUuid.magnetometerCalibration[0])
-        .then(characteristic => {
-            magnetometerCalibrationCharacteristic = characteristic;
-            addLog("Starting magnetometer calibration notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', magnetometerCalibrationChanged);
-            })
-            .catch(error => {
-                addLogError(error);
-            });
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-    })
-    .catch(error => {
-        addLogError(error);
-    });
+    };
 }
 
 
@@ -352,14 +369,17 @@ function connect() {
  * Function that disconnects from the Bluetooth device (if connected).
  */
 function disconnect() {
+    addLog("Disconnecting... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
-            addLog("Disconnecting...", true);
             bluetoothDevice.gatt.disconnect();
+            if (!bluetoothDevice.gatt.connected) {
+                addLog("<font color='green'>OK</font>", true);
+            };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
