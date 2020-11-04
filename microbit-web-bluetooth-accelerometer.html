@@ -3,11 +3,11 @@
     <head>
         <title>Web Bluetooth micro:bit Accelerometer</title>
         <h1>Web Bluetooth micro:bit Accelerometer</h1>
-        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth Accelerometer service.</p>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth Accelerometer service.<br>Example MakeCode micro:bit project <a href="https://makecode.microbit.org/_i2cRUvcd34Ai" target="_blank">here</a> (or <a href="https://makecode.microbit.org/#pub:_i2cRUvcd34Ai" target="_blank">here</a> to open in MakeCode directly).</p>
     </head>
     <body id="body" style="background-color:#FFD0D0">
-        <button id="connectButton" onclick="connect()">Connect</button>
-        <button id="disconnectButton" onclick="disconnect()">Disconnect</button>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
         <h2>Accelerometer Data</h2>
         <table>
             <tr>
@@ -24,8 +24,8 @@
             </tr>
         </table>
         <h2>Accelerometer Period</h2>
-        <input type="text" id="accelerometerPeriodText">
-        <button id="readAccelerometerPeriodButton" onclick="readAccelerometerPeriod()">Read</button>
+        <input type="text" id="accelerometerPeriodText" disabled="true">
+        <button onclick="readAccelerometerPeriod()">Read</button>
         <br>
         <select id="accelerometerPeriodSelect">
             <option value="1">1</option>
@@ -37,8 +37,8 @@
             <option value="160">160</option>
             <option value="640">640</option>
         </select>
-        <button id="writeAccelerometerPeriodButton" onclick="writeAccelerometerPeriod()">Write</button>
-        <h2>Log <button id="clearLogButton" onclick="clearLog()">Clear</button></h2>
+        <button onclick="writeAccelerometerPeriod()">Write</button>
+        <h2>Log <button onclick="clearLog()">Clear</button></h2>
         <p id="log" style="font-family:'Courier New',Courier,monospace"></p>
     </body>
     <script src="microbit-web-bluetooth-accelerometer.js"></script>

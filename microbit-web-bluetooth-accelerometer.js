@@ -148,24 +148,25 @@ function accelerometerDataChanged(event) {
  * period given by the Bluetooth characteristic.
  */
 function readAccelerometerPeriod() {
+    addLog("Reading accelerometer period... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!accelerometerPeriodCharacteristic) {
-                addLog("There is no Accelerometer Period characteristic.", true);
+                addLogError("There is no Accelerometer Period characteristic.");
             } else {
                 accelerometerPeriodCharacteristic.readValue()
                 .then(value => {
-                    addLog("Accelerometer period read...", true);
                     document.getElementById("accelerometerPeriodText").value = value.getUint16(0, true); // Little Endian
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -175,26 +176,27 @@ function readAccelerometerPeriod() {
  * micro:bit Bluetooth characteristic.
  */
 function writeAccelerometerPeriod() {
+    addLog("Writing accelerometer period... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!accelerometerPeriodCharacteristic) {
-                addLog("There is no Accelerometer Period characteristic.", true);
+                addLogError("There is no Accelerometer Period characteristic.");
             } else {
                 let buffer = new ArrayBuffer(2);
                 let accelerometerPeriod = new DataView(buffer);
                 accelerometerPeriod.setUint16(0, document.getElementById("accelerometerPeriodSelect").value, true); // Little Endian
                 accelerometerPeriodCharacteristic.writeValue(accelerometerPeriod)
                 .then(_ => {
-                    addLog("Accelerometer period updated...", true);
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -204,32 +206,53 @@ function writeAccelerometerPeriod() {
  * associated with the Accelerometer service.
  */
 function connect() {
-    addLog("Requesting micro:bit Bluetooth devices...", true);
-    navigator.bluetooth.requestDevice({
-        // To accept all devices, use acceptAllDevices: true and remove filters.
-        filters: [{namePrefix: "BBC micro:bit"}],
-        optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
-    })
-    .then(device => {
-        bluetoothDevice = device;
-        addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)...", true);
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        document.getElementById("body").style = "background-color:#D0FFD0";
-        return device.gatt.connect();
-    })
-    .then(server => {
-        addLog("Getting Accelerometer service (UUID: " + microbitUuid.accelerometerService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.accelerometerService[0]);
-    })
-    .then(service => {
-        addLog("Getting Accelerometer data characteristic...", true);
-        service.getCharacteristic(microbitUuid.accelerometerData[0])
-        .then(characteristic => {
-            accelerometerDataCharacteristic = characteristic;
-            addLog("Starting accelerometer data notifications...", true);
-            return characteristic.startNotifications()
-            .then(_ => {
-                characteristic.addEventListener('characteristicvaluechanged', accelerometerDataChanged);
+    addLog("Requesting micro:bit Bluetooth devices... ", false);
+    if (!navigator.bluetooth) {
+        addLogError("Bluetooth not available in this browser or computer.");
+    } else {
+        navigator.bluetooth.requestDevice({
+            // To accept all devices, use acceptAllDevices: true and remove filters.
+            filters: [{namePrefix: "BBC micro:bit"}],
+            optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
+        })
+        .then(device => {
+            addLog("<font color='green'>OK</font>", true);
+            bluetoothDevice = device;
+            addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)... ", false);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
+            document.getElementById("body").style = "background-color:#D0FFD0";
+            return device.gatt.connect();
+        })
+        .then(server => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Accelerometer service (UUID: " + microbitUuid.accelerometerService[0] + ")... ", false);
+            return server.getPrimaryService(microbitUuid.accelerometerService[0]);
+        })
+        .then(service => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting Accelerometer data characteristic... ", false);
+            service.getCharacteristic(microbitUuid.accelerometerData[0])
+            .then(dataChar => {
+                addLog("<font color='green'>OK</font>", true);
+                accelerometerDataCharacteristic = dataChar;
+                addLog("Starting accelerometer data notifications... ", false);
+                return dataChar.startNotifications()
+                .then(_ => {
+                    addLog("<font color='green'>OK</font>", true);
+                    dataChar.addEventListener('characteristicvaluechanged', accelerometerDataChanged);
+                    addLog("Getting Accelerometer period characteristic... ", false);
+                    service.getCharacteristic(microbitUuid.accelerometerPeriod[0])
+                    .then(periodChar => {
+                        accelerometerPeriodCharacteristic = periodChar;
+                        addLog("<font color='green'>OK</font>", true);
+                    })
+                    .catch(error => {
+                        addLogError(error);
+                    });
+                })
+                .catch(error => {
+                    addLogError(error);
+                });
             })
             .catch(error => {
                 addLogError(error);
@@ -238,18 +261,7 @@ function connect() {
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting Accelerometer period characteristic...", true);
-        service.getCharacteristic(microbitUuid.accelerometerPeriod[0])
-        .then(characteristic => {
-            accelerometerPeriodCharacteristic = characteristic;
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-    })
-    .catch(error => {
-        addLogError(error);
-    });
+    };
 }
 
 
@@ -258,14 +270,17 @@ function connect() {
  * Function that disconnects from the Bluetooth device (if connected).
  */
 function disconnect() {
+    addLog("Disconnecting... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
-            addLog("Disconnecting...", true);
             bluetoothDevice.gatt.disconnect();
+            if (!bluetoothDevice.gatt.connected) {
+                addLog("<font color='green'>OK</font>", true);
+            };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
