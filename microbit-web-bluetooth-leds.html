@@ -3,11 +3,11 @@
     <head>
         <title>Web Bluetooth micro:bit LEDs</title>
         <h1>Web Bluetooth micro:bit LEDs</h1>
-        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth LED service.</p>
+        <p>Scan Bluetooth devices (using "BBC micro:bit" as namePrefix filter). Allows to interact with the micro:bit using the Bluetooth LED service.<br>Example MakeCode micro:bit project <a href="https://makecode.microbit.org/_4kK9bh9J9Cox" target="_blank">here</a> (or <a href="https://makecode.microbit.org/#pub:_4kK9bh9J9Cox" target="_blank">here</a> to open in MakeCode directly).</p>
     </head>
     <body id="body" style="background-color:#FFD0D0">
-        <button id="connectButton" onclick="connect()">Connect</button>
-        <button id="disconnectButton" onclick="disconnect()">Disconnect</button>
+        <button onclick="connect()">Connect</button>
+        <button onclick="disconnect()">Disconnect</button>
         <h2>LED Matrix</h2>
         <table>
             <tr>
@@ -46,16 +46,18 @@
                 <td><input type="checkbox" id="55"></td>
             </tr>
         </table>
-        <button id="readLedMatrixButton" onclick="readLedMatrix()">Read</button>
-        <button id="writeLedMatrixButton" onclick="writeLedMatrix()">Write</button>
+        <button onclick="readLedMatrix()">Read</button>
+        <button onclick="writeLedMatrix()">Write</button>
         <h2>LED Text</h2>
         <input type="text" id="ledTextText" maxlength="20">
-        <button id="writeLedTextButton" onclick="writeLedText()">Write</button>
+        <button onclick="writeLedText()">Write</button>
         <h2>Scrolling Delay</h2>
-        <input type="number" id="scrollingDelayText" min="0" max="65535">
-        <button id="readScrollingDelayButton" onclick="readScrollingDelay()">Read</button>
-        <button id="writeScrollingDelayButton" onclick="writeScrollingDelay()">Write</button>
-        <h2>Log <button id="clearLogButton" onclick="clearLog()">Clear</button></h2>
+        <input type="number" id="readScrollingDelayText" disabled="true">
+        <button onclick="readScrollingDelay()">Read</button>
+        <br>
+        <input type="number" id="writeScrollingDelayText" min="0" max="65535">
+        <button onclick="writeScrollingDelay()">Write</button>
+        <h2>Log <button onclick="clearLog()">Clear</button></h2>
         <p id="log" style="font-family:'Courier New',Courier,monospace"></p>
     </body>
     <script src="microbit-web-bluetooth-leds.js"></script>

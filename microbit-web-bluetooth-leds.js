@@ -139,52 +139,62 @@ var scrollingDelayCharacteristic;
  * associated with the LED service.
  */
 function connect() {
-    addLog("Requesting micro:bit Bluetooth devices...", true);
-    navigator.bluetooth.requestDevice({
-        // To accept all devices, use acceptAllDevices: true and remove filters.
-        filters: [{namePrefix: "BBC micro:bit"}],
-        optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
-    })
-    .then(device => {
-        bluetoothDevice = device;
-        addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)...", true);
-        device.addEventListener('gattserverdisconnected', onDisconnected);
-        document.getElementById("body").style = "background-color:#D0FFD0";
-        return device.gatt.connect();
-    })
-    .then(server => {
-        addLog("Getting LED service (UUID: " + microbitUuid.ledService[0] + ")...", true);
-        return server.getPrimaryService(microbitUuid.ledService[0]);
-    })
-    .then(service => {
-        addLog("Getting LED matrix state characteristic...", true);
-        service.getCharacteristic(microbitUuid.ledMatrixState[0])
-        .then(characteristic => {
-            ledMatrixCharacteristic = characteristic;
+    addLog("Requesting micro:bit Bluetooth devices... ", false);
+    if (!navigator.bluetooth) {
+        addLogError("Bluetooth not available in this browser or computer.");
+    } else {
+        navigator.bluetooth.requestDevice({
+            // To accept all devices, use acceptAllDevices: true and remove filters.
+            filters: [{namePrefix: "BBC micro:bit"}],
+            optionalServices: [microbitUuid.genericAccess[0], microbitUuid.genericAttribute[0], microbitUuid.deviceInformation[0], microbitUuid.accelerometerService[0], microbitUuid.magnetometerService[0], microbitUuid.buttonService[0], microbitUuid.ioPinService[0], microbitUuid.ledService[0], microbitUuid.eventService[0], microbitUuid.dfuControlService[0], microbitUuid.temperatureService[0], microbitUuid.uartService[0]],
+        })
+        .then(device => {
+            addLog("<font color='green'>OK</font>", true);
+            bluetoothDevice = device;
+            addLog("Connecting to GATT server (name: <font color='blue'>" + device.name + "</font>, ID: <font color='blue'>" + device.id + "</font>)... ", false);
+            device.addEventListener('gattserverdisconnected', onDisconnected);
+            document.getElementById("body").style = "background-color:#D0FFD0";
+            return device.gatt.connect();
+        })
+        .then(server => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting LED service (UUID: " + microbitUuid.ledService[0] + ")... ", false);
+            return server.getPrimaryService(microbitUuid.ledService[0]);
+        })
+        .then(service => {
+            addLog("<font color='green'>OK</font>", true);
+            addLog("Getting LED matrix state characteristic... ", false);
+            service.getCharacteristic(microbitUuid.ledMatrixState[0])
+            .then(matrixChar => {
+                addLog("<font color='green'>OK</font>", true);
+                ledMatrixCharacteristic = matrixChar;
+                addLog("Getting LED text characteristic... ", false);
+                service.getCharacteristic(microbitUuid.ledText[0])
+                .then(textChar => {
+                    addLog("<font color='green'>OK</font>", true);
+                    ledTextCharacteristic = textChar;
+                    addLog("Getting scrolling delay characteristic... ", false);
+                    service.getCharacteristic(microbitUuid.scrollingDelay[0])
+                    .then(delayChar => {
+                        scrollingDelayCharacteristic = delayChar;
+                        addLog("<font color='green'>OK</font>", true);
+                    })
+                    .catch(error => {
+                        addLogError(error);
+                    });
+                })
+                .catch(error => {
+                    addLogError(error);
+                });
+            })
+            .catch(error => {
+                addLogError(error);
+            });
         })
         .catch(error => {
             addLogError(error);
         });
-        addLog("Getting LED text characteristic...", true);
-        service.getCharacteristic(microbitUuid.ledText[0])
-        .then(characteristic => {
-            ledTextCharacteristic = characteristic;
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-        addLog("Getting scrolling delay characteristic...", true);
-        service.getCharacteristic(microbitUuid.scrollingDelay[0])
-        .then(characteristic => {
-            scrollingDelayCharacteristic = characteristic;
-        })
-        .catch(error => {
-            addLogError(error);
-        });
-    })
-    .catch(error => {
-        addLogError(error);
-    });
+    };
 }
 
 
@@ -193,14 +203,17 @@ function connect() {
  * Function that disconnects from the Bluetooth device (if connected).
  */
 function disconnect() {
+    addLog("Disconnecting... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
-            addLog("Disconnecting...", true);
             bluetoothDevice.gatt.disconnect();
+            if (!bluetoothDevice.gatt.connected) {
+                addLog("<font color='green'>OK</font>", true);
+            };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -212,12 +225,13 @@ function disconnect() {
  * by the Bluetooth characteristics.
  */
 function readLedMatrix() {
+    addLog("Reading LED matrix... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!ledMatrixCharacteristic) {
-                addLog("There is no LED Matrix characteristic.", true);
+                addLogError("There is no LED Matrix characteristic.");
             } else {
                 ledMatrixCharacteristic.readValue()
                 .then(value => {
@@ -227,14 +241,14 @@ function readLedMatrix() {
                             document.getElementById((rowIndex+1).toString() + (5-columnIndex).toString()).checked = ((row >>> columnIndex) % 2 === 1);
                         };
                     };
-                    addLog("LED matrix read...", true);
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -244,12 +258,13 @@ function readLedMatrix() {
  * checkboxes through the LED matrix state Bluetooth characteristic.
  */
 function writeLedMatrix() {
+    addLog("Writing LED matrix... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!ledMatrixCharacteristic) {
-                addLog("There is no LED Matrix characteristic.", true);
+                addLogError("There is no LED Matrix characteristic.");
             } else {
                 let buffer = new ArrayBuffer(5);
                 let ledMatrix = new DataView(buffer);
@@ -261,14 +276,14 @@ function writeLedMatrix() {
                 };
                 ledMatrixCharacteristic.writeValue(ledMatrix)
                 .then(_ => {
-                    addLog("LED matrix written...", true);
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -279,20 +294,21 @@ function writeLedMatrix() {
  * Function that writes a string to the LED text characteristic.
  */
 function writeLedText() {
+    addLog("Writing LED text... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!ledTextCharacteristic) {
-                addLog("There is no LED Text characteristic.", true);
+                addLogError("There is no LED Text characteristic.");
             } else {
                 if (!("TextEncoder" in window)) {
-                    addLogError("Sorry, this browser does not support TextEncoder...");
+                    addLogError("Sorry, this browser does not support TextEncoder.");
                 } else {
                     let enc = new TextEncoder();
                     ledTextCharacteristic.writeValue(enc.encode(document.getElementById("ledTextText").value))
                     .then(_ => {
-                        addLog("LED text sent...", true);
+                        addLog("<font color='green'>OK</font>", true);
                     })
                     .catch(error => {
                         addLogError(error);
@@ -300,7 +316,7 @@ function writeLedText() {
                 };
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -312,24 +328,25 @@ function writeLedText() {
  * given by the Bluetooth characteristic.
  */
 function readScrollingDelay() {
+    addLog("Reading scrolling delay... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!scrollingDelayCharacteristic) {
-                addLog("There is no Scolling Delay characteristic.", true);
+                addLogError("There is no Scolling Delay characteristic.");
             } else {
                 scrollingDelayCharacteristic.readValue()
                 .then(value => {
-                    addLog("Scrolling delay read...", true);
-                    document.getElementById("scrollingDelayText").value = value.getUint16(0, true); // Little Endian
+                    document.getElementById("readScrollingDelayText").value = value.getUint16(0, true); // Little Endian
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
@@ -339,26 +356,27 @@ function readScrollingDelay() {
  * Bluetooth characteristic.
  */
 function writeScrollingDelay() {
+    addLog("Writing scrolling delay... ", false);
     if (!bluetoothDevice) {
-        addLog("There is no device connected.", true);
+        addLogError("There is no device connected.");
     } else {
         if (bluetoothDevice.gatt.connected) {
             if (!scrollingDelayCharacteristic) {
-                addLog("There is no Scrolling Delay characteristic.", true);
+                addLogError("There is no Scrolling Delay characteristic.");
             } else {
                 let buffer = new ArrayBuffer(2);
                 let scrollingDelay = new DataView(buffer);
-                scrollingDelay.setUint16(0, document.getElementById("scrollingDelayText").value, true); // Little Endian
+                scrollingDelay.setUint16(0, document.getElementById("writeScrollingDelayText").value, true); // Little Endian
                 scrollingDelayCharacteristic.writeValue(scrollingDelay)
                 .then(_ => {
-                    addLog("Scrolling delay updated...", true);
+                    addLog("<font color='green'>OK</font>", true);
                 })
                 .catch(error => {
                     addLogError(error);
                 });
             };
         } else {
-            addLog("There is no device connected.", true);
+            addLogError("There is no device connected.");
         };
     };
 }
