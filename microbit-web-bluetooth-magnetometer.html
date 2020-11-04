@@ -8,7 +8,7 @@
     <body id="body" style="background-color:#FFD0D0">
         <button onclick="connect()">Connect</button>
         <button onclick="disconnect()">Disconnect</button>
-        <h2>Magnetometer Data</h2>
+        <h2>Magnetometer Data (μT)</h2>
         <table>
             <tr>
                 <td>x:</td>
@@ -23,7 +23,7 @@
                 <td id="magnetometerZ">-</td>
             </tr>
         </table>
-        <h2>Magnetometer Period</h2>
+        <h2>Magnetometer Period (ms)</h2>
         <input type="text" id="magnetometerPeriodText" disabled="true">
         <button onclick="readMagnetometerPeriod()">Read</button>
         <br>
@@ -41,8 +41,8 @@
             <option value="12800">12800</option>
         </select>
         <button onclick="writeMagnetometerPeriod()">Write</button>
-        <h2>Magnetometer Bearing</h2>
-        <p id="bearing">Bearing: -° from north.</p>
+        <h2>Magnetometer Bearing (° from north)</h2>
+        <p id="bearing">-</p>
         <h2>Magnetometer Calibration</h2>
         <p id="calibration">-</p>
         <select id="magnetometerCalibrationSelect">

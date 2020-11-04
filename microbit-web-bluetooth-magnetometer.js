@@ -150,7 +150,7 @@ function magnetometerDataChanged(event) {
  * characteristic.
  */
 function magnetometerBearingChanged(event) {
-    document.getElementById("bearing").innerHTML = "Bearing: " + event.target.value.getUint16(0, true) + "° from north."; // Little Endian
+    document.getElementById("bearing").innerHTML = event.target.value.getUint16(0, true); // Little Endian
 }
 
 /**
